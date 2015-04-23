@@ -1,4 +1,4 @@
-clear;
+% clear;
 close all;
 clc
 tic
@@ -12,10 +12,10 @@ Matlab_ver = str2num(ans(1:4)); %#ok<NOANS,ST2NM>
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 RUN_TYPE.sim = 1;  % RUN_TYPE = 1 - for DIRECT     &    RUN_TYPE = 0 - for DP only
 RUN_TYPE.emiss_data = 1; % RUN_TYPE.emiss = 1 - maps have emissions  &   RUN_TYPE.emiss = 0 - maps do not have emissions
-RUN_TYPE.emiss_on = 1;  % This is to turn off and on emissions
+% RUN_TYPE.emiss_on = 1;  % This is to turn off and on emissions
 RUN_TYPE.plot = 0;  % RUN_TYPE.plot = 1 - plots on  &   RUN_TYPE.plot = 0 - plots off
-RUN_TYPE.soc_size = 0.1;
-RUN_TYPE.trq_size = 15;  % Nm
+RUN_TYPE.soc_size = 0.001;
+RUN_TYPE.trq_size = 5;  % Nm
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %-----------------Weighing Parameters for DP------------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
@@ -117,7 +117,7 @@ Manipulate_Data_Structure;
 % cyc_name = 'HWFET';
 % cyc_name = 'UDDS';
 % cyc_name = 'US06';
-cyc_name = 'SHORT_CYC_HWFET';
+% cyc_name = 'SHORT_CYC_HWFET';
 % cyc_name = 'RAMP';
 % cyc_name = 'LA92';
 % cyc_name = 'CONST_65';
@@ -154,7 +154,7 @@ g_eq = [0,               0,               0];
 c_L = [-RUN_TYPE.soc_size];
 c_U =  [RUN_TYPE.soc_size];
 
-n = 5;
+% n = 5;
 dv = 4;
 X_temp = lhsdesign(n,dv);
 
