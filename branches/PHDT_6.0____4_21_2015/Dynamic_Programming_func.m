@@ -448,7 +448,7 @@ for t = 1:1:cyc_data.time_cyc
     else
         We_fuel = We_c;
     end
-    
+
     if (Te_c ~= 0 && ((We_c < 550*param.rpm2rads) || We_c > vinf.W_eng_max))
         Fail_We = 1;
     else

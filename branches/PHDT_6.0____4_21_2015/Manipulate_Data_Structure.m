@@ -13,7 +13,7 @@ vinf.fc_hc_map = dvar.fc_trq_scale*vinf.fc_hc_map_orig;
 vinf.fc_co_map = dvar.fc_trq_scale*vinf.fc_co_map_orig;
 vinf.fc_nox_map = dvar.fc_trq_scale*vinf.fc_nox_map_orig;
 vinf.eng_control_trq = [0:RUN_TYPE.trq_size:max(vinf.eng_max_trq),max(vinf.eng_max_trq)]; % If you control it with the given vecotr, you may not need to interpolate!
-vinf.Te_min = vinf.Te_min_orig;
+vinf.Te_min = dvar.fc_trq_scale*vinf.Te_min_orig;
 
 fc_max_pwr=(max(vinf.eng_consum_spd_old.*vinf.eng_max_trq)/1000); % kW     peak engine power
 fc_base_mass=1.8*fc_max_pwr;            % (kg), mass of the engine block and head (base engine)
