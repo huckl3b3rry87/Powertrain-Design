@@ -1,16 +1,16 @@
 
 co_temp = fc_co_map_gpkWh(fc_co_map_gpkWh~=0);
-num1_2 = 8;
+num1_2 = 20;
 num2_3 = 6;
-BSFC_L1 = linspace(min(co_temp),1.09*min(co_temp),8);
-BSFC_L2_temp = linspace(1.09*min(co_temp),15*min(co_temp),num1_2);
+BSFC_L1 = linspace(min(co_temp),2.3*min(co_temp),16);
+BSFC_L2_temp = linspace(2.3*min(co_temp),15*min(co_temp),num1_2);
 BSFC_L2  = BSFC_L2_temp(2:num1_2);
 BSFC_U_temp  = linspace(1.5*min(co_temp),max(max(co_temp),1.9*min(co_temp)),num2_3);
 BSFC_U  = BSFC_U_temp(2:num2_3);
 
 BSFC = [BSFC_L1, BSFC_L2, BSFC_U];
 
-figure(17); clf;
+figure(187); clf;
 [C,h] = contourf(vinf.eng_consum_spd*rads2rpm, vinf.eng_consum_trq, fc_co_map_gpkWh',BSFC);
 axis([0 5500 0 max(vinf.eng_max_trq+5)]);
 hold on;

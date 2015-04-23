@@ -8,7 +8,7 @@ tic
 RUN_TYPE.sim = 0;  % RUN_TYPE = 1 - for DIRECT     &    RUN_TYPE = 0 - for DP only
 RUN_TYPE.emiss_data = 1; % RUN_TYPE.emiss = 1 - maps have emissions  &   RUN_TYPE.emiss = 0 - maps do not have emissions
 RUN_TYPE.emiss_on = 1;  % This is to turn of and on emissions
-RUN_TYPE.plot = 0;  % RUN_TYPE.plot = 1 - plots on  &   RUN_TYPE.plot = 0 - plots off
+RUN_TYPE.plot = 1;  % RUN_TYPE.plot = 1 - plots on  &   RUN_TYPE.plot = 0 - plots off
 RUN_TYPE.soc_size = 0.001;
 RUN_TYPE.trq_size = 5;  % Nm
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
@@ -98,16 +98,11 @@ dvar.mc_trq_scale = 1.2;
 mc_max_pwr_kW =  dvar.mc_trq_scale*vinf.mc_max_pwr_kW;
 dvar.module_number = ceil(4*mc_max_pwr_kW*1000*Rint_size/(Voc_size^2));
 dvar.module_number = 38;
-% dvar.FD =4.0895;
-% dvar.G = 1.3786;
-% dvar.fc_trq_scale = 0.4967;
-% dvar.mc_trq_scale = 0.6012;
-% x =
-% 
-%     5.5448    0.7000    0.6010    0.8742
-%x =
+% dvar.FD =2.799;
+% dvar.G = 1.9728;
+% dvar.fc_trq_scale = 0.6216;
+% dvar.mc_trq_scale = 0.6007;
 
-%    4.0895    1.3786    0.4967    0.6012
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %---------------------Update the Data-------------------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
@@ -155,7 +150,7 @@ if RUN_TYPE.sim == 0
         cd('Plots')
         Main_Plot;
         Engine_Plot;
-        if RUN_TYPE.emiss == 1
+        if RUN_TYPE.emiss_on == 1
             Engine_NOx_Plot;
             Engine_HC_Plot;
             Engine_CO_Plot;

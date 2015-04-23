@@ -628,6 +628,10 @@ else
     emission = NaN;
 end
 MPG = total_distance_mile/(total_fuel_gram/1000/param.gasoline_density*param.liter2gallon);
+
+if isinf(MPG)
+    MPG = 0;
+end
 cd ..    % Come out of folder
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%

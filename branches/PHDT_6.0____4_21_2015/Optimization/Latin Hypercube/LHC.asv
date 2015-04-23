@@ -101,8 +101,8 @@ vinf_data = struct2cell(vinf);
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~d%
 dvar.FD = 5.495;
 dvar.G = 1.4;
-dvar.fc_trq_scale = 0.78;
-dvar.mc_trq_scale = 1.2;
+dvar.fc_trq_scale = 0.078;
+dvar.mc_trq_scale = .12;
 mc_max_pwr_kW =  dvar.mc_trq_scale*vinf.mc_max_pwr_kW;
 dvar.module_number = ceil(4*mc_max_pwr_kW*1000*Rint_size/(Voc_size^2));
 dvar.module_number = 38;
@@ -154,7 +154,7 @@ g_eq = [0,               0,               0];
 c_L = [-RUN_TYPE.soc_size];
 c_U =  [RUN_TYPE.soc_size];
 
-n = 5;
+n = 10;
 dv = 4;
 X_temp = lhsdesign(n,dv);
 
@@ -262,9 +262,9 @@ for nn = 1:n
     end
     
     if FAIL_LHC || any(fail_ineq_con) || any(fail_eq_con)
-        FAIL_LHC_save(nn,1) = 1;
+        FAIL_LHC(nn,1) = 1;
     else
-        FAIL_LHC_save(nn,1) = 0;
+        FAIL_LHC(nn,1) = 0;
     end
     
     % Save all data
@@ -291,7 +291,7 @@ for nn = 1:n
     end
     mkdir(name)
     cd(name)
-    eval(['save(''','FAIL_LHC',''',','''FAIL_LHC_save'');'])
+    eval(['save(''','FAIL_LHC',''',','''FAIL_LHC'');'])
     eval(['save(''','MPG',''',','''MPG_save'');'])
     eval(['save(''','DV',''',','''X_save'');'])
     eval(['save(''','NOx',''',','''NOx_save'');'])
