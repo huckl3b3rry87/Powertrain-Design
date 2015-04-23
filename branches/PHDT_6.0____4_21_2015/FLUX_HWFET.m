@@ -1,12 +1,9 @@
 clear;
 % TO RUN THE LATIN HYPERCUBE script %
-% addpath('/home/febbo/LHC7/Optimization/Latin Hypercube/')
+addpath('/home/febbo/LHC4/Optimization/Latin Hypercube/')
 
 n = 1000;
-RUN_TYPE.emiss_on = 0; %off
-% cyc_name = 'UDDS';
-% cyc_name = 'US06';
-% cyc_name = 'AA_final';
+weight_LHC = 0;            % NO varialble emissions weights
+RUN_TYPE.emiss_on = 0;     % No Emissions!
 cyc_name = 'HWFET';
-
 LHC;

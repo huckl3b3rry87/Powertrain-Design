@@ -3,8 +3,8 @@ clear;
 % addpath('/home/febbo/LHC_3/Optimization/Latin Hypercube/')
 
 n = 1000;
-weight_LHC = 0;            % No variable emissions weights
-RUN_TYPE.emiss_on = 1;     % Emissions at nominal values
+weight_LHC = 1;            % Variable Emissions weights on!!
+RUN_TYPE.emiss_on = 1;     % This setting does not matter for this script
 cyc_name = 'UDDS';
 
 LHC;

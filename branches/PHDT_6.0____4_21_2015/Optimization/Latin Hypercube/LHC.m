@@ -1,4 +1,4 @@
-% clear;  % RUN ON FLUX ---Remember to Comment out [RUN_TYPE.emiss, n,drive cycle]
+% clear;  % RUN ON FLUX ---Remember to Comment out [RUN_TYPE.emiss, weight,LHC, n,drive cycle]
 close all
 clc
 tic
@@ -16,7 +16,7 @@ RUN_TYPE.emiss_data = 1;   % RUN_TYPE.emiss = 1 - maps have emissions  &   RUN_T
 RUN_TYPE.plot = 0;         % RUN_TYPE.plot = 1 - plots on  &   RUN_TYPE.plot = 0 - plots off
 RUN_TYPE.soc_size = 0.001;
 RUN_TYPE.trq_size = 5;     % Nm
-weight_LHC = 1;            % This is an option to include the weights in the DVs
+% weight_LHC = 1;            % This is an option to include the weights in the DVs
 % n = 10;                    % Size of LHC
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %-----------------Weighing Parameters for DP------------------------------%
@@ -272,9 +272,9 @@ for nn = 1:n
     end
     
     if FAIL_LHC || any(fail_ineq_con) || any(fail_eq_con)
-        FAIL_LHC_save(nn,1) = 1;
+        FAIL_LHC_save(nn,1) = 1;  % Fail
     else
-        FAIL_LHC_save(nn,1) = 0;
+        FAIL_LHC_save(nn,1) = -1;  % -1 is supposed to be better for the NN with discrete events, will also be easy to deal with inequality constraint in GA
     end
     
     % Save all data
