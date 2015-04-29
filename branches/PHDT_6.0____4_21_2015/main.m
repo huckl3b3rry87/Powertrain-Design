@@ -89,17 +89,17 @@ data;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %---------------------Update the Design Variables-------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
-dvar.FD = 5.495;
-dvar.G = 1.4;
-dvar.fc_trq_scale = 0.78;
-dvar.mc_trq_scale = 1.2;
-mc_max_pwr_kW =  dvar.mc_trq_scale*vinf.mc_max_pwr_kW;
+% dvar.FD = 5.495;
+% dvar.G = 1.4;
+% dvar.fc_trq_scale = 0.78;
+% dvar.mc_trq_scale = 1.2;
+% mc_max_pwr_kW =  dvar.mc_trq_scale*vinf.mc_max_pwr_kW;
 % dvar.module_number = ceil(4*mc_max_pwr_kW*1000*Rint_size/(Voc_size^2));
 dvar.module_number = 38;
-% dvar.FD = 7.2761;
-% dvar.G = 1.9867;
-% dvar.fc_trq_scale = 1.1104;
-% dvar.mc_trq_scale = 1.4478;
+dvar.FD = 2.8412;
+dvar.G = 1.7308;
+dvar.fc_trq_scale = 0.5783;
+dvar.mc_trq_scale = 0.1069;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %---------------------Update the Data-------------------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
@@ -109,10 +109,10 @@ Manipulate_Data_Structure;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %%                              ~~ Standard ~~
 
-% cyc_name = 'HWFET';
+cyc_name = 'HWFET';
 % cyc_name = 'UDDS';
 % cyc_name = 'US06';
-cyc_name = 'SHORT_CYC_HWFET';
+% cyc_name = 'SHORT_CYC_HWFET';
 % cyc_name = 'RAMP';
 % cyc_name = 'LA92';
 % cyc_name = 'CONST_65';
