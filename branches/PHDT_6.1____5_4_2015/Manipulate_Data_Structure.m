@@ -5,7 +5,6 @@ vinf.m_max_gen_trq = dvar.mc_trq_scale*vinf.m_max_gen_trq_orig;
 vinf.mc_mass = dvar.mc_trq_scale*vinf.mc_mass_orig;
 
 % Engine
-% vinf.eng_control_trq = dvar.fc_trq_scale*vinf.eng_control_trq_orig;
 vinf.eng_consum_trq = dvar.fc_trq_scale*vinf.eng_consum_trq_orig;
 vinf.eng_max_trq = dvar.fc_trq_scale*vinf.eng_max_trq_orig;
 vinf.eng_consum_fuel = dvar.fc_trq_scale*vinf.eng_consum_fuel_orig;

@@ -6,7 +6,8 @@ close all;
 settings.emiss_on = 1;   % This is to turn of and on emissions
 settings.normalized = 0; % If the output is normalized
 settings.weights = 0;    % To use the weights as design variables
-settings.dist = 10.2567; % Cycle distance (miles) for HWFET...leave for now, but it should be calcualted on the fly
+% settings.dist = 10.2567; % Cycle distance (miles) for HWFET...leave for now, but it should be calcualted on the fly
+settings.dist = 8.0080; %US06
 settings_name = fieldnames(settings);
 settings_data = struct2cell(settings);
 
@@ -94,16 +95,30 @@ nonlcon=@(x)constraint(x,net_names, net_data);
 %     pop = 80 + k*1;
 %     gen= 45 + k*5; %set number of generations
 %     for u =1:1% if it is less than 50 (the stall gen setting) weird things happen...
-pop = 40;
-gen =50;
-ini=rand(pop,nvars);
+
+pop=40; %set population size
+
+generations= 50; %set number of generations
+x0=[5.495, 1.4, 1.2, 1.2];
+  ini=rand(pop,nvars);
+  ini(:,1) = x_L(1) + (x_U(1) -x_L(1))*ini(:,1);
+  ini(:,2) = x_L(2) + (x_U(2) -x_L(2))*ini(:,2);
+   ini(:,3) = x_L(3) + (x_U(3) -x_L(3))*ini(:,3);
+    ini(:,4) = x_L(4) + (x_U(4) -x_L(4))*ini(:,4);
+% % Check intial point
+% nonlcon=@(x)constraint(x0,net_names, net_data)
+% nonlcon(x0',varargin)
+% [cineq,ceq] = nonlcon(x0)
+%%
 time = inf; % time in (s)
 % options = gaoptimset('TimeLimit', time, 'InitialPopulation',ini,'PopulationSize',pop,'Generations',gen,'PlotFcns',{@gaplotbestf, @gaplotstopping});
-options2 = gaoptimset('PlotFcns',{@gaplotbestfun, @gaplotstopping}, 'Display','iter');
+% options2 = gaoptimset('PlotFcns',{@gaplotbestfun, @gaplotstopping}, 'Display','iter');
+%   options = saoptimset('InitialPopulation',x0,'PopulationSize',pop,'Generations',generations,'PlotFcns',@gaplotbestfun);
 
 %% Solve problem
 %         [x,fval,exitflag,output] = ga(vfun,nvars,[],[],[],[],x_L,x_U,nonlcon,IntCon,options2)
-[x,fval,exitflag,output] = ga(vfun,nvars,[],[],[],[],x_L,x_U,nonlcon,IntCon,options2)
+[x,fval,exitflag,output] = simulannealbnd(vfun,x0,x_L,x_U,nonlcon)
+% [x,fval,exitflag,output] = ga(vfun,nvars,[],[],[],[],x_L,x_U,nonlcon)
 
 % if exitflag ~= -2
 %     result.x(k,u,:) = x;

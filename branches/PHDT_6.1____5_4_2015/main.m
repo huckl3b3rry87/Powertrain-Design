@@ -34,7 +34,7 @@ RUN_data = struct2cell(RUN_TYPE);
 
 weight.shift = 1;
 weight.engine_event = 10;
-weight.infeasible = 200;
+weight.infeasible = 200;  % Values for the fuel table are about 11, so 
 weight.CS = 91000;
 weight.SOC_final = 500;
 
@@ -96,10 +96,10 @@ data;
 % mc_max_pwr_kW =  dvar.mc_trq_scale*vinf.mc_max_pwr_kW;
 % dvar.module_number = ceil(4*mc_max_pwr_kW*1000*Rint_size/(Voc_size^2));
 dvar.module_number = 38;
-dvar.FD = 2.8412;
-dvar.G = 1.7308;
-dvar.fc_trq_scale = 0.5783;
-dvar.mc_trq_scale = 0.1069;
+dvar.FD = 3.5934;
+dvar.G = 1.5246;
+dvar.fc_trq_scale = 0.9396;
+dvar.mc_trq_scale = 1.0582;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %---------------------Update the Data-------------------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
@@ -109,9 +109,9 @@ Manipulate_Data_Structure;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %%                              ~~ Standard ~~
 
-cyc_name = 'HWFET';
+% cyc_name = 'HWFET';
 % cyc_name = 'UDDS';
-% cyc_name = 'US06';
+cyc_name = 'US06';
 % cyc_name = 'SHORT_CYC_HWFET';
 % cyc_name = 'RAMP';
 % cyc_name = 'LA92';

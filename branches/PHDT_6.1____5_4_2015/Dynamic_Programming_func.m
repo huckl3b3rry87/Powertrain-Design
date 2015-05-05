@@ -42,8 +42,8 @@ Eng_Penalty(:,1,:,:,:) = eng_pen;
 
 %% Define Some soft cnstraints stuff
 SOC_penalty = linspace(0.1,10,20);
-NEAR_SOC_min = param.MIN_SOC + fliplr(linspace(0.001,0.02,20));
-NEAR_SOC_max = param.MAX_SOC - fliplr(linspace(0.001,0.02,20));
+NEAR_SOC_min = param.MIN_SOC + fliplr(linspace(RUN_TYPE.soc_size,0.02,20));
+NEAR_SOC_max = param.MAX_SOC - fliplr(linspace(RUN_TYPE.soc_size,0.02,20));
 
 if RUN_TYPE.sim == 0
     tic
@@ -254,13 +254,13 @@ for t = 1:cyc_data.time_cyc
     SOC_soft = SOC_soft + SOC_penalty(17)*(NEAR_SOC_max(18)> table_x1 & table_x1 > NEAR_SOC_max(17));
     SOC_soft = SOC_soft + SOC_penalty(18)*(NEAR_SOC_max(19)> table_x1 & table_x1 > NEAR_SOC_max(18));
     SOC_soft = SOC_soft + SOC_penalty(19)*(NEAR_SOC_max(20)> table_x1 & table_x1 > NEAR_SOC_max(19));
-    SOC_soft = SOC_soft + SOC_penalty(20)*((param.MAX_SOC > table_x1) & (table_x1 > NEAR_SOC_max(20)));
+    SOC_soft = SOC_soft + SOC_penalty(20)*(table_x1 > NEAR_SOC_max(20));
     
     inst_fuel = repmat(inst_fuel,[1,1,1,x2_length,x1_length]); % Add an extra dimension for the fuel table
     inst_fuel = permute(inst_fuel,[5 4 1 2 3]);
     inst_fuel(:,1,:,(2:end),:) = weight.engine_event*ones(size(inst_fuel(:,1,:,(2:end),:))) + inst_fuel(:,1,:,(2:end),:);
 
-    table_L = inst_fuel + Eng_Penalty + SOC_soft + 10*infeasible_SOC + weight.infeasible*(infeasible_We + infeasible_Tm + infeasible_Wm + infeasible_Te + infeasible_Pbatt);   %[x2]x[u1]x[u2]x[u3]
+    table_L = inst_fuel + Eng_Penalty + SOC_soft + weight.infeasible*(infeasible_SOC + infeasible_We + infeasible_Tm + infeasible_Wm + infeasible_Te + infeasible_Pbatt);   %[x2]x[u1]x[u2]x[u3]
     
     savename = ['Transitional Cost = ',num2str(t),' Table.mat'];
     save(savename,'table_x1','table_L');
@@ -327,13 +327,13 @@ for t = cyc_data.time_cyc:-1:1
         for x2 = 1:x2_length
             for x3 = 1:x3_length
                 S = squeeze(J_temp(x1,x2,x3,:,:));
-                [minS,idx] = min(S(:));
+                [~,idx] = min(S(:));
                 [u1_id,u2_id] = ind2sub(size(S),idx);
                 opt_trq(x1,x2,x3) = u1_grid(u1_id);
                 opt_id_u2(x1,x2,x3) = u2_id;
                 
                 % Define the new optimum value
-                opt_value(x1,x2,x3) = J_temp(x1,x2,x3,u1_id,u2_id);  % Using Optimium Control Sequence [u1opt,u2opt,u3opt]
+                opt_value(x1,x2,x3) = J_temp(x1,x2,x3,u1_id,u2_id);  % Using Optimium Control Sequence [u1opt,u2opt]
             end
         end
     end
@@ -417,6 +417,9 @@ for t = 1:1:cyc_data.time_cyc
     Te_c = interp1(x1_grid,opt_trq(:,x2,x3),SOC_c,'linear');
     if x2 == 1 && Te_c ~= 0; ENG_event = 1; else ENG_event = 0; end
     
+%     % Update x3 for CURRENT STEP
+%     if  Te_c == 0; x2 = 1; else x2 = 2; end
+    
     % Shifting Control
     id_lookup_u2 = interp1(x1_grid,opt_id_u2(:,x2,x3),SOC_c,'nearest');  %Use index extraction!!
     u2_c = u2_grid(id_lookup_u2);
@@ -476,7 +479,7 @@ for t = 1:1:cyc_data.time_cyc
     end
     if Te_c == 0
         fuel =0;
-        if RUN_TYPE.emiss_data == 1
+        if RUN_TYPE.emiss_data == 1  % if emissions are on
             NOx = 0;
             CO = 0;
             HC = 0;
@@ -485,13 +488,14 @@ for t = 1:1:cyc_data.time_cyc
     
     %             % Update x1
     % Saturate the motor for the efficiency lookup table
-    Tm_max= interp1(vinf.m_map_spd,vinf.m_max_trq,Wm_c);
+    Tm_max= interp1(vinf.m_map_spd,vinf.m_max_trq,Wm_c); 
+    Tm_min = interp1(vinf.m_map_spd,vinf.m_max_gen_trq,Wm_c);
     if Tm_c > Tm_max;
         Fail_Tm = 1;
         Tm_eff = Tm_max;
-    elseif Tm_c < -Tm_max;
-        Fail_Tm = 1;
-        Tm_eff = -Tm_max;
+    elseif Tm_c < Tm_min;
+        Fail_Tm = 0; % Did not fail this in DP
+        Tm_eff = Tm_min;
     else
         Fail_Tm = 0;
         Tm_eff = Tm_c;
@@ -524,7 +528,7 @@ for t = 1:1:cyc_data.time_cyc
     end
     
     % Discharge
-    Pbatt_max = interp1(vinf.ess_soc, vinf.ess_max_pwr_dis, SOC_c);
+    Pbatt_max = interp1(vinf.ess_soc, vinf.ess_max_pwr_dis,SOC_c);
     rint_discharge = interp1(vinf.ess_soc,vinf.ess_r_dis,SOC_c);
     
     % Charge
