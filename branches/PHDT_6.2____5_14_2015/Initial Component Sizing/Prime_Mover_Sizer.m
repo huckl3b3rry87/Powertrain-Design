@@ -29,9 +29,9 @@ Engine_41_kW_manip;
 % Motor_75_kW;
 % Motor_30_kW;
 % Motor_49_kW;
-Motor_10_kW;
+% Motor_10_kW;
 % Motor_8_kW;  
-% Motor_25_kW;
+Motor_25_kW;
 
 % ----------------Battery
 
@@ -39,7 +39,7 @@ Battery_ADVISOR;
 
 % ----------------Vehicle
 % High Speed
-Vehicle_Parameters_small_car;
+Vehicle_Parameters_small_car_plus;
 % Vehicle_Parameters_4_HI_AV;
 % Vehicle_Parameters_4_HI;
 % Vehicle_Parameters_8_HI_AV;
@@ -58,7 +58,7 @@ data;                              %  Put all the data into structures
 %-------------------------Design Variables--------------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 dvar.fc_trq_scale = 1;
-dvar.mc_trq_scale = 1.2; % Manually tune untill it passes the acc test
+dvar.mc_trq_scale = 1.1; % Manually tune untill it passes the acc test
 dvar.FD = 2;
 dvar.G = 1;  % Also change this so that you can get to the maximum speed!
 

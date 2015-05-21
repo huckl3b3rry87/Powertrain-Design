@@ -1,6 +1,6 @@
 clear;
 % TO RUN THE LATIN HYPERCUBE script %
-addpath('/home/febbo/LHC_HWFET_10kW/Optimization/Latin Hypercube/')
+addpath('/home/febbo/LHC_HWFET_plus_big/Optimization/Latin Hypercube/')
 
 n = 1000;
 weight_LHC = 0;            % No variable emissions weights

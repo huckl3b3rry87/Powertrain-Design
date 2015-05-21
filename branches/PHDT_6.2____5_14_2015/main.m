@@ -70,6 +70,7 @@ Battery_ADVISOR;
 
 %                              ~~ Vehicle ~~
 Vehicle_Parameters_small_car;
+% Vehicle_Parameters_small_car_plus;
 % Vehicle_Parameters_4_HI_AV;
 % Vehicle_Parameters_4_HI;
 % Vehicle_Parameters_8_HI_AV;

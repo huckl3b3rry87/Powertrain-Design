@@ -75,16 +75,18 @@ Engine_41_kW_manip;
 % Motor_75_kW;
 % Motor_30_kW;
 % Motor_49_kW;
-Motor_10_kW;
+% Motor_10_kW;
 % Motor_8_kW;
 % Motor_16_kW;
+Motor_25_kW;
 
 %                             ~~ Battery ~~
 % Battery_int;  % No variation with the number of modules in this battery!!
 Battery_ADVISOR;
 
 %                              ~~ Vehicle ~~
-Vehicle_Parameters_small_car;
+Vehicle_Parameters_small_car_plus;
+% Vehicle_Parameters_small_car;
 % Vehicle_Parameters_4_HI_AV;
 % Vehicle_Parameters_4_HI;
 % Vehicle_Parameters_8_HI_AV;
@@ -103,13 +105,13 @@ data;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %---------------------Update the Design Variables-------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~d%
-dvar.FD = 5.495;
-dvar.G = 1.4;
-dvar.fc_trq_scale = 0.77;
-dvar.mc_trq_scale = 1.2;
+dvar.FD = 5.65;
+dvar.G = 1.1;
+dvar.fc_trq_scale = 1.075;
+dvar.mc_trq_scale = 1.1;
 % mc_max_pwr_kW =  dvar.mc_trq_scale*vinf.mc_max_pwr_kW;
 % dvar.module_number = ceil(4*mc_max_pwr_kW*1000*Rint_size/(Voc_size^2));
-dvar.module_number = 8;
+dvar.module_number = 18;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %---------------------Select Drive Cycle----------------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
@@ -142,8 +144,10 @@ dvar.module_number = 8;
 
 % Identify the Design Variables and their ranges
 if RUN_TYPE.battery == 1
-    x_L=[    0.4*dvar.FD, 0.4*dvar.G, 0.5*dvar.fc_trq_scale, 0.5*dvar.mc_trq_scale,floor(0.5*dvar.module_number)]';
-    x_U=[    2*dvar.FD, 2*dvar.G,     1.5*dvar.fc_trq_scale, 1.5*dvar.mc_trq_scale,floor(1.5*dvar.module_number)]';
+%     x_L=[    0.4*dvar.FD, 0.4*dvar.G, 0.5*dvar.fc_trq_scale, 0.5*dvar.mc_trq_scale,floor(0.5*dvar.module_number)]';
+%     x_U=[    2*dvar.FD, 2*dvar.G,     1.5*dvar.fc_trq_scale, 1.5*dvar.mc_trq_scale,floor(1.5*dvar.module_number)]';
+    x_L=[    0.2*dvar.FD, 0.1*dvar.G, 0.15*dvar.fc_trq_scale, 0.15*dvar.mc_trq_scale,floor(0.15*dvar.module_number)]';
+    x_U=[    2.5*dvar.FD, 2*dvar.G,     2*dvar.fc_trq_scale, 2*dvar.mc_trq_scale,floor(2*dvar.module_number)]';
     dv = 5;
 else
     x_L=[    0.25*dvar.FD, 0.25*dvar.G, 0.2*dvar.fc_trq_scale, 0.2*dvar.mc_trq_scale]';
