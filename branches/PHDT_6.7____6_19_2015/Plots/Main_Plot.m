@@ -4,7 +4,7 @@ q = 1;
 h = 9;
 y = 12;
 t = 1.25*cyc_data.time_cyc;
-figure(1); clf;
+h1 = figure; clf;
 subplot(5,1,1);
 [AX,L1,L2] = plotyy(cyc_data.cyc_time, cyc_data.cyc_spd, cyc_data.cyc_time,sim.SOC_final);
 set(L1,'marker','x', 'markersize', n, 'markerf','b','linewidth',q);

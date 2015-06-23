@@ -3,20 +3,14 @@ close all
 clc
 tic
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
-%-----------------Check Matlab Version------------------------------------%
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
-version -release;
-Matlab_ver = str2num(ans(1:4)); %#ok<NOANS,ST2NM>
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %-----------------Define the Run Type-------------------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 RUN_TYPE.sim = 0;        % RUN_TYPE = 1 - for DIRECT     &    RUN_TYPE = 0 - for DP only
 RUN_TYPE.emiss_data = 1; % RUN_TYPE.emiss = 1 - maps have emissions  &   RUN_TYPE.emiss = 0 - maps do not have emissions
-RUN_TYPE.emiss_on = 1;   % to turn of and on emissions
+RUN_TYPE.emiss_on = 0;   % to turn of and on emissions
 RUN_TYPE.plot = 0;       % RUN_TYPE.plot = 1 - plots on  &   RUN_TYPE.plot = 0 - plots off
-RUN_TYPE.save = 1;       % to save results
-RUN_TYPE.soc_size = 0.1;
-RUN_TYPE.trq_size = 15;   % Nm
+RUN_TYPE.soc_size = 0.00005;
+RUN_TYPE.trq_size = 0.05;   % Nm
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %-----------------Weighing Parameters for DP------------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
@@ -43,7 +37,7 @@ RUN_data = struct2cell(RUN_TYPE);
 weight.shift = 1;
 weight.engine_event = 0;
 weight.clutch_event = 0;
-weight.infeasible = 200;
+weight.infeasible = 200;  
 weight.CS = 91000;
 weight.SOC_final = 500;
 
@@ -118,9 +112,9 @@ Manipulate_Data_Structure;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %                             ~~ Standard ~~
 % cyc_name = 'HWFET';
-% cyc_name = 'UDDS';
+cyc_name = 'UDDS';
 % cyc_name = 'US06';
-cyc_name = 'SHORT_CYC_HWFET';
+% cyc_name = 'SHORT_CYC_HWFET';
 % cyc_name = 'RAMP_slower';
 % cyc_name = 'LA92';
 % cyc_name = 'CONST_65';

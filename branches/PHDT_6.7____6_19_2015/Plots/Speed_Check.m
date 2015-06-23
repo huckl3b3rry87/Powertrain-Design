@@ -1,5 +1,5 @@
 %%  Motor is always connected to vehicle...
-figure(14);clf;
+h4=figure;clf;
 
 We = sim.W_eng./(vinf.gear(sim.GEAR)*dvar.FD);
 Wm = sim.W_mot./(dvar.FD*dvar.G);

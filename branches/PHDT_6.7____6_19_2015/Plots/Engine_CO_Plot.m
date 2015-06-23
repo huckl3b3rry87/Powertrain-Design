@@ -10,7 +10,7 @@ BSFC_U  = BSFC_U_temp(2:num2_3);
 
 BSFC = [BSFC_L1, BSFC_L2, BSFC_U];
 
-figure(187); clf;
+h10=figure; clf;
 [C,h] = contourf(vinf.eng_consum_spd*rads2rpm, vinf.eng_consum_trq, fc_co_map_gpkWh',BSFC);
 axis([0 5500 0 max(vinf.eng_max_trq+5)]);
 hold on;

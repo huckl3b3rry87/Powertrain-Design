@@ -2,7 +2,7 @@
 k = 4;
 eff = linspace(min(min(mc_eff_map)),max(max(mc_eff_map)),15);
 
-figure(17); clf;
+h5=figure; clf;
 [C,h] = contourf(vinf.m_map_spd*rads2rpm, vinf.m_map_trq, vinf.m_eff_map',eff);
 hold on; 
 plot(sim.W_mot*rads2rpm, sim.T_mot, 'ko', 'markersize', 8, 'markerf', 'g','linewidth',3)

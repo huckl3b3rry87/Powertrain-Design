@@ -22,10 +22,10 @@ cd(tables);
 x1_grid = (0.4:RUN_TYPE.soc_size:0.8)';  % SOC
 x1_length = length(x1_grid);
 
-x2_grid = [1 2 3];                        % engine off (1)   &   engine on (2)  & engine idling (3)
+x2_grid = [1 2 3];                        % engine off (1) & engine on (2) & engine idling (3)
 x2_length = length(x2_grid);
 
-x3_grid = vinf.gear;                     % gear level -  [1st 2nd...]
+x3_grid = vinf.gear;                     % gear level - [1st 2nd...]
 x3_length = length(x3_grid);
 
 % define control grids
@@ -35,7 +35,7 @@ u1_length = length(u1_grid);
 u2_grid = [-1 0 1];                      % shift down, nothing, up
 u2_length = length(u2_grid);
 
-u3_grid = [1 2 3];                       % move to:  engine off (1)   &   engine on (2)  & engine idling (3)
+u3_grid = [1 2 3];                       % move to: engine off (1) & engine on (2) & engine idling (3)
 u3_length = length(u3_grid);
 
 % define speed converter properties for moving Off - see automotive transmission fundamentals pg #80
@@ -67,7 +67,7 @@ for t = 1:cyc_data.time_cyc
     infeasible_Te = single(zeros(x3_length,u1_length,u2_length));        % [x1]x[x3]x[u1]x[u2]
     infeasible_Pbatt = single(zeros(x1_length,x3_length,u1_length,u2_length));
     
-    for x3 = 1:x3_length          % go through all of the gears
+    for x3 = 1:x3_length           % go through all of the gears
         x3_c = x3_grid(x3);
         
         for u2 = 1:u2_length       % shift down, don't shift, and shift up
@@ -87,31 +87,19 @@ for t = 1:cyc_data.time_cyc
             New_Gear_Index = x3 + u2_c;
             x3_n = x3_grid(New_Gear_Index);
             
-            Wis_gb = cyc_data.Ww(t)*dvar.FD*x3_n; % [rad/s] - speed of input shaft to gearbox
-            
-            % the case where the engine is off (in in terms of speed is
-            % handeled manually by setting fuel and emissions to zero
-            if  New_Gear_Index == 1 && Wis_gb < vinf.W_gb_is_min % use moving off strategy
-                We_c = interp1(vinf.W_gb_mo,vinf.W_eng_mo,Wis_gb); %
-            else
-                We_c = Wis_gb;                                                               % [rad/s] - speed of input shaft to gearbox
-            end
-            
+            % speed of input shaft to gearbox
+            Wis_gb = cyc_data.Ww(t)*dvar.FD*x3_n;                   % [rad/s] 
+
             % engine
+            if  New_Gear_Index == 1 && Wis_gb < vinf.W_gb_is_min    % use moving off strategy
+                We_c = interp1(vinf.W_gb_mo,vinf.W_eng_mo,Wis_gb);  % [rad/s]
+            else
+                We_c = Wis_gb;                                      % [rad/s]
+            end
             Te_c =  u1_grid;                                                                 % engine control, [u1]x[1]
-            Te_drive = u1_grid;                                                              % could be a difference form the auxillary power
-            Wm_c = cyc_data.Ww(t)*dvar.FD*dvar.G;                                            % [rad/sec]
-            Tm_c = cyc_data.Tw(t)/(dvar.FD*dvar.G)*ones(size(Te_c)) - Te_drive*x3_n/dvar.G;  % [u1]x[1]
+            Te_drive = Te_c;                                                                 % subtract auxiliary power (torque) here     
             
-            % check motor
-            Tm_max_current = interp1(vinf.m_map_spd,vinf.m_max_trq,Wm_c)*ones(size(u1_grid));
-            Tm_max(x3,:,u2) =  Tm_max_current;                                            % [x2]x[x3]x[u1]x[u2]x[u3]
-            Tm_min_current = interp1(vinf.m_map_spd,vinf.m_max_gen_trq,Wm_c)*ones(size(u1_grid));
-            Tm_min(x3,:,u2) =  Tm_min_current;                                            % [x2]x[x3]x[u1]x[u2]x[u3]
-            Tm_save(x3,:,u2) = Tm_c;                                                      % [x2]x[x3]x[u1]x[u2]x[u3]
-            Wm_save(x3,:,u2) = Wm_c*ones(size(u1_grid));                                  % [u1]x[1]  -  check for each gear
-            
-            % check Engine
+            % check engine
              We_save(x3,:,u2) =  We_c*ones(size(u1_grid));      %  speed of the engine depends on the gear and engine state
               
             % saturate engine speed - for max torque lookup & fuel lookup
@@ -131,14 +119,14 @@ for t = 1:cyc_data.time_cyc
             Te_c(Te_c < Te_min) = Te_min(Te_c < Te_min);
             
             fuel = (interp2(vinf.eng_consum_trq',vinf.eng_consum_spd,vinf.eng_consum_fuel,Te_c,We_c,'linear')*cyc_data.dt)';
-            
             if RUN_TYPE.emiss_data == 1
                 NOx = (interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_nox_map,Te_c,We_c,'linear')*cyc_data.dt)';
                 CO = (interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_co_map,Te_c,We_c,'linear')*cyc_data.dt)';
                 HC = (interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_hc_map,Te_c,We_c,'linear')*cyc_data.dt)';
                 inst_fuel(x3,:,u2) = weight.fuel*fuel + weight.NOx*NOx + weight.CO*CO + weight.HC*HC + Shift_Penalty*ones(size(fuel));
                 
-                % for idling
+                % for idling - should be the same each time, could remove
+                % from loop
                 fuel_idle = (interp2(vinf.eng_consum_trq',vinf.eng_consum_spd,vinf.eng_consum_fuel,vinf.Te_min, vinf.W_gb_is_min,'linear')*cyc_data.dt)';
                 NOx_idle = (interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_nox_map,vinf.Te_min,vinf.W_gb_is_min,'linear')*cyc_data.dt)';
                 CO_idle =  (interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_co_map,vinf.Te_min,vinf.W_gb_is_min,'linear')*cyc_data.dt)';
@@ -154,7 +142,18 @@ for t = 1:cyc_data.time_cyc
             % save for the grid points where no torque is applied and the engine is off
             inst_fuel_off(x3,1,u2) = Shift_Penalty;  % [x3]x[1]x[u2]  - (gear x zero torque x gear control) - now this just penalizes shifting events
             
-            % update x1
+             % motor
+            Wm_c = cyc_data.Ww(t)*dvar.FD*dvar.G;                                            % [rad/sec]
+            Tm_c = cyc_data.Tw(t)/(dvar.FD*dvar.G)*ones(size(Te_c)) - Te_drive*x3_n/dvar.G;  % [u1]x[1]
+            
+            % check motor
+            Tm_max_current = interp1(vinf.m_map_spd,vinf.m_max_trq,Wm_c)*ones(size(u1_grid));
+            Tm_max(x3,:,u2) =  Tm_max_current;                                            % [x2]x[x3]x[u1]x[u2]x[u3]
+            Tm_min_current = interp1(vinf.m_map_spd,vinf.m_max_gen_trq,Wm_c)*ones(size(u1_grid));
+            Tm_min(x3,:,u2) =  Tm_min_current;                                            % [x2]x[x3]x[u1]x[u2]x[u3]
+            Tm_save(x3,:,u2) = Tm_c;                                                      % [x2]x[x3]x[u1]x[u2]x[u3]
+            Wm_save(x3,:,u2) = Wm_c*ones(size(u1_grid));                                  % [u1]x[1]  -  check for each gear
+            
             % saturate the motor for the efficiency lookup table
             Tm_eff = Tm_c;
             Tm_eff(Tm_c > Tm_max_current) = Tm_max_current(Tm_c > Tm_max_current);
@@ -162,10 +161,10 @@ for t = 1:cyc_data.time_cyc
             Wm_eff = Wm_c;
             Wm_eff(Wm_c > vinf.Wm_max) = vinf.Wm_max;
             Wm_eff(Wm_c < vinf.Wm_min) = vinf.Wm_min;
-            
             eff_m = interp2(vinf.m_map_trq, vinf.m_map_spd, vinf.m_eff_map, Tm_eff, abs(Wm_eff))';
             eff_m(isnan(eff_m)) = 0.2;
-            
+           
+            % update x1
             Pbat_charge = (Wm_eff*Tm_eff).*(eff_m*vinf.ess_coulombic_eff);    % Tm_c < 0
             Pbat_discharge = (Wm_eff*Tm_eff)./(eff_m*vinf.ess_coulombic_eff); % battery needs to supply more power!!
             
@@ -194,43 +193,45 @@ for t = 1:cyc_data.time_cyc
             rint_c = rint_charge;
             rint_c(Pbat > 0) = rint_discharge(Pbat > 0);
             
+            % SOC calculation
             Voc_c = repmat(interp1(vinf.ess_soc,vinf.ess_voc,x1_grid), [1, u1_length]);
             SOC_c_matrix = repmat(x1_grid,[1, u1_length]);
             SOC_n =  SOC_c_matrix -(Voc_c -(Voc_c.^2 -4*Pbat.*rint_c).^(1/2))./(2*rint_c*vinf.ess_cap_ah*3600)*cyc_data.dt;
-            
             table_x1(:,x3,:,u2) = SOC_n;
         end           % end of u2 (gear control)
     end               % end of x3 (sear state)
+    % check all motor torques from previous loops
+    infeasible_Tm = (Tm_save > Tm_max);      % can brake to make the rest up
     
-    % add in Pbatt state
-    infeasible_Pbatt = repmat(infeasible_Pbatt,[1,1,1,1,x2_length]);
-    infeasible_Pbatt = permute(infeasible_Pbatt,[1 5 2 3 4]);
-    
-    % check motor
-    infeasible_Tm = (Tm_save > Tm_max);                                    % can brake to make the rest up
-    infeasible_Tm = repmat(infeasible_Tm,[1,1,1,x2_length,x1_length]);
-    infeasible_Tm = permute(infeasible_Tm,[5 4 1 2 3]);
-    
-    infeasible_Wm = (Wm_save > vinf.Wm_max) | (Wm_save < vinf.Wm_min);              
-    infeasible_Wm = repmat(infeasible_Wm,[1,1,1,x2_length,x1_length]);
-    infeasible_Wm = permute(infeasible_Wm,[5 4 1 2 3]);
-    
-    % check engine
+    % check all engine speeds from previous loops
     infeasible_We = (We_save < vinf.We_fail) | (We_save > vinf.W_eng_max);
-    infeasible_We = repmat(infeasible_We,[1,1,1,x2_length,x1_length]);
-    infeasible_We = permute(infeasible_We,[5 4 1 2 3]);
     
-    infeasible_Te = repmat(infeasible_Te,[1,1,1,x2_length,x1_length]);
-    infeasible_Te = permute(infeasible_Te,[5 4 1 2 3]);
+    % add in extra dimensions for engine state & engine control
+    infeasible_Pbatt = repmat(infeasible_Pbatt,[1,1,1,1,x2_length,u3_length]);
+    infeasible_Pbatt = permute(infeasible_Pbatt,[1 5 2 3 4 6]);
     
-    % add in the extra dimension for engine state ( SOC tables are not
+    % motor
+    infeasible_Tm = repmat(infeasible_Tm,[1,1,1,x2_length,x1_length,u3_length]);
+    infeasible_Tm = permute(infeasible_Tm,[5 4 1 2 3 6]);
+    infeasible_Wm = (Wm_save > vinf.Wm_max) | (Wm_save < vinf.Wm_min);
+    infeasible_Wm = repmat(infeasible_Wm,[1,1,1,x2_length,x1_length,u3_length]);
+    infeasible_Wm = permute(infeasible_Wm,[5 4 1 2 3 6]);
+    
+    % engine
+    infeasible_We = repmat(infeasible_We,[1,1,1,x2_length,x1_length,u3_length]);
+    infeasible_We = permute(infeasible_We,[5 4 1 2 3 6]);
+    infeasible_Te = repmat(infeasible_Te,[1,1,1,x2_length,x1_length,u3_length]);
+    infeasible_Te = permute(infeasible_Te,[5 4 1 2 3 6]);
+    
+    % add in the extra dimension for engine state | note: SOC tables are not
     % affected by what it was, they will be affected by the engine torque
     % control appled at that time step though
     table_x1 = repmat(table_x1,[1,1,1,1,x2_length]);
     table_x1 = permute(table_x1,[1 5 2 3 4]);
     
     % check SOC
-    infeasible_SOC = (table_x1 < param.MIN_SOC) | (table_x1 > param.MAX_SOC);        
+    infeasible_SOC = (table_x1 < param.MIN_SOC) | (table_x1 > param.MAX_SOC);   
+    infeasible_SOC = repmat(infeasible_SOC,[1,1,1,1,1,u3_length]);
     table_x1(table_x1 > param.MAX_SOC) = param.MAX_SOC;
     table_x1(table_x1 < param.MIN_SOC) = param.MIN_SOC;
     
@@ -278,32 +279,36 @@ for t = 1:cyc_data.time_cyc
     SOC_soft = SOC_soft + SOC_penalty(19)*(NEAR_SOC_max(20)> table_x1 & table_x1 > NEAR_SOC_max(19));
     SOC_soft = SOC_soft + SOC_penalty(20)*(table_x1 > NEAR_SOC_max(20));
     
+    % add in dimension for engine control
+    SOC_soft = repmat(SOC_soft,[1,1,1,1,1,u3_length]);
+    
+    % add in extra dimensions for SOC & engine state & engine control | note: inst_fuel was [x3]x[u1]x[u2]
     inst_fuel = repmat(inst_fuel,[1,1,1,x2_length,x1_length,u3_length]);
     inst_fuel = permute(inst_fuel,[5 4 1 2 3 6]);
     
-    % penalize for using engine torque when it is off
+    % add in results for engine off  | note: inst_fuel_off was [x3]x[1]x[u2]
+    inst_fuel_off = repmat(inst_fuel_off,[1,1,1,x1_length,1,1]);   % [x3{1}] x [1-for u1{2}] x [u2{3}] x [x1{4}] x [1-for x2{5}] x [1-for u3{6}]
+    inst_fuel_off = permute(inst_fuel_off,[4 5 1 2 3 6]);
+    inst_fuel(:,1,:,1,:,1) =  inst_fuel_off;      % still has shifting penalties
+    inst_fuel(:,2,:,1,:,1) =  inst_fuel_off; 
+    inst_fuel(:,3,:,1,:,1) =  inst_fuel_off;
+    
+    % add in engine idling results 
+    inst_fuel_idle = repmat(inst_fuel_idle,[1,1,1,x1_length,1,1]);  % [x3{1}] x [1-for u1{2}] x [u2{3}] x [x1{4}] x [1-for x2{5}] x [1-for u3{6}]
+    inst_fuel_idle = permute(inst_fuel_idle,[4 5 1 2 3 6]);
+    inst_fuel(:,1,:,1,:,3) =  inst_fuel_idle;
+    inst_fuel(:,2,:,1,:,3) =  inst_fuel_idle;
+    inst_fuel(:,3,:,1,:,3) =  inst_fuel_idle;
+    
+    % penalize for using engine torque when engine is off
     inst_fuel(:,1,:,(2:end),:,1) = weight.infeasible*ones(size(inst_fuel(:,1,:,(2:end),:,1)))+ inst_fuel(:,1,:,(2:end),:,1);
     inst_fuel(:,2,:,(2:end),:,1) = weight.infeasible*ones(size(inst_fuel(:,2,:,(2:end),:,1)))+ inst_fuel(:,2,:,(2:end),:,1);
     inst_fuel(:,3,:,(2:end),:,1) = weight.infeasible*ones(size(inst_fuel(:,3,:,(2:end),:,1)))+ inst_fuel(:,3,:,(2:end),:,1);
     
-    % penalize for using engine torque when it idling
+    % penalize for using engine torque when engine is idling
     inst_fuel(:,1,:,(2:end),:,3) = weight.infeasible*ones(size(inst_fuel(:,1,:,(2:end),:,3)))+ inst_fuel(:,1,:,(2:end),:,3);
     inst_fuel(:,2,:,(2:end),:,3) = weight.infeasible*ones(size(inst_fuel(:,2,:,(2:end),:,3)))+ inst_fuel(:,2,:,(2:end),:,3);
     inst_fuel(:,3,:,(2:end),:,3) = weight.infeasible*ones(size(inst_fuel(:,3,:,(2:end),:,3)))+ inst_fuel(:,3,:,(2:end),:,3);
-    
-    % add in results for engine off  | note: inst_fuel_off was [x3]x[1]x[u2]
-    inst_fuel_off = repmat(inst_fuel_off,[1,1,1,x1_length,1,1]);   % [x3{1}]x[1 -for u1{2}]x[u2{3}]x[x1{4}]x[1-for x2{5}]x[1-for u3{6}]
-    inst_fuel_off = permute(inst_fuel_off,[4 5 1 2 3 6]);
-    inst_fuel(:,1,:,1,:,1) =  inst_fuel_off;                       % [x1]x[one for eng off]x[x3]x[one for no torque]x[u2]x[one for do nothing]
-    inst_fuel(:,2,:,1,:,1) =  inst_fuel_off;                       % [x1]x[one for eng on]x[x3]x[one for no torque]x[u2]x[one for turning eng off during that time step]
-    inst_fuel(:,3,:,1,:,1) =  inst_fuel_off;
-    
-    % add in results for engine idle
-    inst_fuel_idle = repmat(inst_fuel_idle,[1,1,1,x1_length,1,1]);   % [x3{1}]x[1 -for u1{2}]x[u2{3}]x[x1{4}]x[1-for x2{5}]x[1-for u3{6}]
-    inst_fuel_idle = permute(inst_fuel_idle,[4 5 1 2 3 6]);
-    inst_fuel(:,1,:,1,:,3) =  inst_fuel_idle;                       % [x1]x[one for eng off]x[x3]x[one for no torque]x[u2]x[one for do nothing]
-    inst_fuel(:,2,:,1,:,3) =  inst_fuel_idle;                       % [x1]x[one for eng on]x[x3]x[one for no torque]x[u2]x[one for turning eng off during that time step]
-    inst_fuel(:,3,:,1,:,3) =  inst_fuel_idle;
     
     % penalize for turning engine on
     inst_fuel(:,1,:,:,:,2) = weight.engine_event*ones(size(inst_fuel(:,1,:,:,:,2))) + inst_fuel(:,1,:,:,:,2);
@@ -312,14 +317,6 @@ for t = 1:cyc_data.time_cyc
     % penalize for using clutch
     inst_fuel(:,1,:,:,:,3) = weight.clutch_event*ones(size(inst_fuel(:,1,:,:,:,3))) + inst_fuel(:,1,:,:,:,3);
     inst_fuel(:,2,:,:,:,3) = weight.clutch_event*ones(size(inst_fuel(:,2,:,:,:,3))) + inst_fuel(:,2,:,:,:,3);
-    
-    SOC_soft = repmat(SOC_soft,[1,1,1,1,1,u3_length]);
-    infeasible_SOC = repmat(infeasible_SOC,[1,1,1,1,1,u3_length]);
-    infeasible_We = repmat(infeasible_We,[1,1,1,1,1,u3_length]);
-    infeasible_Te = repmat(infeasible_Te,[1,1,1,1,1,u3_length]);
-    infeasible_Wm = repmat(infeasible_Wm,[1,1,1,1,1,u3_length]);
-    infeasible_Tm = repmat(infeasible_Tm,[1,1,1,1,1,u3_length]);
-    infeasible_Pbatt = repmat(infeasible_Pbatt,[1,1,1,1,1,u3_length]);
     
     % do not penalize engine when it is off
     infeasible_We(:,1,:,:,:,1) = zeros(size(infeasible_We(:,1,:,:,:,1)));
@@ -330,7 +327,7 @@ for t = 1:cyc_data.time_cyc
     infeasible_Te(:,2,:,:,:,1) = zeros(size(infeasible_Te(:,2,:,:,:,1)));
     infeasible_Te(:,3,:,:,:,1) = zeros(size(infeasible_Te(:,3,:,:,:,1)));
     
-    % add up opperational cost
+    % opperational cost
     table_L = inst_fuel + SOC_soft + weight.infeasible*(infeasible_SOC + infeasible_We + infeasible_Tm + infeasible_Wm + infeasible_Te + infeasible_Pbatt);   %[x2]x[u1]x[u2]x[u3]
     
     savename = ['Transitional Cost = ',num2str(t),' Table.mat'];
@@ -363,7 +360,7 @@ cd(tables);         % go into tables
 for t = cyc_data.time_cyc:-1:1
     loadfile_name = ['Transitional Cost = ',num2str(t),' Table.mat'];
     load(loadfile_name);
-    table_x1 = repmat(table_x1,[1,1,1,1,1,u3_length]);
+    table_x1 = repmat(table_x1,[1,1,1,1,1,u3_length]); % add in extra dimension for engine control
     SOC_State_Penalty = single(zeros(x1_length,x2_length,x3_length,u1_length,u2_length,u3_length));
     for x2 = 1:x2_length                  % eng state
         for x3 = 1:x3_length              % gear state
@@ -371,9 +368,9 @@ for t = cyc_data.time_cyc:-1:1
                 for u2 = 1:u2_length      % gear control
                     for u3 = 1:u3_length  % eng control
                         
-                        % next gear
+                        % next gear state
                         if (u2 == 1 && x3 == 1) || (u2 == 3 && x3 == x3_length)
-                            u2_c = 0; % cannot shift, will move off of state grid
+                            u2_c = 0; % cannot shift; will move off of state grid
                             Infeasible_Shift = weight.infeasible*single(ones(x1_length,1,1,1,1,1));
                         else
                             u2_c = u2_grid(u2);
@@ -384,9 +381,9 @@ for t = cyc_data.time_cyc:-1:1
                         % next engine state
                         if  u3 == 1     % eng is off
                             x2_n = 1;
-                        elseif u3 == 2 % eng is on
+                        elseif u3 == 2  % eng is on
                             x2_n = 2;
-                        else % eng is idling
+                        else            % eng is idling
                             x2_n = 3;
                         end
                         
@@ -421,7 +418,7 @@ for t = cyc_data.time_cyc:-1:1
     save(savename,'J_STAR','opt_trq','opt_id_u2','opt_eng_ctr');
     
     if RUN_TYPE.sim == 0
-        complete = (cyc_data.time_cyc-t)/(cyc_data.time_cyc)*100;
+        complete =(cyc_data.time_cyc-t)/(cyc_data.time_cyc)*100;
         clc
         fprintf('__________________________________________________\n\n')
         fprintf('Percent Complete of Dynamic Programming = ')
@@ -468,7 +465,6 @@ sim.GEAR_save = zeros(1,cyc_data.time_cyc);
 sim.J = zeros(1,cyc_data.time_cyc);
 sim.Pbatt_sim = zeros(1,cyc_data.time_cyc);
 
-% pre-allocate for speed
 fail_inner_SOC = zeros(1,cyc_data.time_cyc);
 fail_inner_Te = zeros(1,cyc_data.time_cyc);
 fail_inner_We = zeros(1,cyc_data.time_cyc);
@@ -495,24 +491,18 @@ for t = 1:1:cyc_data.time_cyc
     Te_c = interp1(x1_grid,opt_trq(:,x2,x3),SOC_c,'linear');
     
     % shifting control
-    id_lookup_u2 = interp1(x1_grid,opt_id_u2(:,x2,x3),SOC_c,'nearest');  %Use index extraction!!
+    id_lookup_u2 = interp1(x1_grid,opt_id_u2(:,x2,x3),SOC_c,'nearest');  % use index extraction to speed up!!
     u2_c = u2_grid(id_lookup_u2);
-    if u2_c == 0; SHIFT_event = 0; else SHIFT_event = 1; end % to quantiy how many times transmission was shifted
+    if u2_c == 0; SHIFT_event = 0; else SHIFT_event = 1; end             % to quantify how many times transmission was shifted
     
     % engine control
     eng_c = interp1(x1_grid,opt_eng_ctr(:,x2,x3),SOC_c,'nearest');
-    if  eng_c == x2; ENG_event = 0;  else ENG_event = 1; end % to quantiy how many times engine was turned on/off
+    if x2 == 0 && eng_c == 2; ENG_event = 1;  else ENG_event = 0; end    % to quantify how many times engine was turned on from off
     
     % calculate cost
     sim.J(t) =  interp1(x1_grid,J_STAR(:,x2,x3),SOC_c,'linear');
     
-    %     % engine control numerical modification - may want to remove now that
-    %     % the nearest interpolation scheme was added
-    %     if x2 == 1 && Te_c < 1
-    %         Te_c = 0;          % do not fail it because of small and intermitant interpolation errors
-    %     end
-    
-    % update engine state - can turn on to meet demand during dt
+    % update x2 (engine state) for current time step
     if eng_c == 1             % eng is off
         x2 = 1;
     elseif eng_c == 2         % eng is on
@@ -523,18 +513,19 @@ for t = 1:1:cyc_data.time_cyc
     
     % shifting control check
     if (x3 == 1 && u2_c == -1) || (x3 == x3_length && u2_c == 1)
-        FAIL_Shift = 1;
         % put in a feasible gear so optimization can continue
         u2_c = 0;
+        FAIL_Shift = 1;
     else
         FAIL_Shift = 0;
     end
     
-    % update x3 and define new gear ID
-    New_Gear_Index = x3 + u2_c;
-    x3_n = x3_grid(New_Gear_Index);
+    % update x3 (gear) for current time step
+    x3 = x3 + u2_c;      % gear level
+    x3_n = x3_grid(x3);  % actual gear ratio   
     
-    Wis_gb = cyc_data.Ww(t)*dvar.FD*x3_n;                    % [rad/s] - speed of input shaft to gearbox
+    % speed of input shaft to gearbox
+    Wis_gb = cyc_data.Ww(t)*dvar.FD*x3_n;     % [rad/s]
     
     % engine
     if x2 == 1                       % eng is off - if it tries to apply torque it will get it for free, but it fails anyway
@@ -561,42 +552,43 @@ for t = 1:1:cyc_data.time_cyc
         else                     % infeasible, cannot apply eng torque when the eng is off
             Fail_Eng = 1;
         end
-    elseif x2 == 2                  % eng is on
-        Fail_Eng = 0;  % apply any torque when the engine is on
+    elseif x2 == 2                             % eng is on
+        Fail_Eng = 0;                          % apply any torque when the engine is on
         
-        if New_Gear_Index == 1 &&  Wis_gb < vinf.W_gb_is_min % use moving off strategy
+        if x3 == 1 &&  Wis_gb < vinf.W_gb_is_min % use moving off strategy
             We_c = interp1(vinf.W_gb_mo,vinf.W_eng_mo,Wis_gb);
-            clutch = Wis_gb/vinf.W_eng_mo(end); % clutch is partially engaged
+            clutch = Wis_gb/vinf.W_eng_mo(end);              % clutch is partially engaged
         else
-            We_c = Wis_gb;                                       % [rad/s] - speed of input shaft to gearbox
-            clutch = 1; % clutch is engaged from trans
+            We_c = Wis_gb;                      % [rad/s]
+            clutch = 1;                         % clutch is engaged to trans
         end
         
-        Te_drive = Te_c;                                         % subtract auxiliary power here
+        Te_drive = Te_c;                        % subtract auxiliary power (torque) here
         if We_c < vinf.W_eng_min
             We_fuel = vinf.W_eng_min;
+            if We_c < vinf.We_fail
+                Fail_We = 1;
+            else
+                Fail_We = 0;
+            end
         elseif We_c > vinf.W_eng_max
             We_fuel = vinf.W_eng_max;
-        else
-            We_fuel = We_c;
-        end
-        
-        if ((We_c < vinf.We_fail) || (We_c > vinf.W_eng_max))
             Fail_We = 1;
         else
+            We_fuel = We_c;
             Fail_We = 0;
         end
         
         Te_max = interp1(vinf.eng_consum_spd_old,vinf.eng_max_trq,We_fuel);
-        if Te_c > Te_max;
-            Fail_Te = 1;
+        if Te_c > Te_max; 
             Te_fuel = Te_max;
+            Fail_Te = 1;
         elseif Te_c < vinf.Te_min;
+            Te_fuel = vinf.Te_min;                           
             Fail_Te = 0;
-            Te_fuel = vinf.Te_min;                             % if engine is idling, it will use this
         else
-            Fail_Te = 0;
             Te_fuel = Te_c;
+            Fail_Te = 0;
         end
         
         fuel = (interp2(vinf.eng_consum_trq',vinf.eng_consum_spd,vinf.eng_consum_fuel,Te_fuel,We_fuel,'linear')*cyc_data.dt)';
@@ -605,21 +597,19 @@ for t = 1:1:cyc_data.time_cyc
             CO = (interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_co_map,Te_fuel,We_fuel,'linear')*cyc_data.dt)';
             HC = (interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_hc_map,Te_fuel,We_fuel,'linear')*cyc_data.dt)';
         end
-    else                       % eng is idling
-       
-        clutch = 0; % clutch is dissengaged from trans
-        
+    else                       % eng is idling  
         % clutch is disengaged, but engine is running
+        clutch = 0;  
         We_c = vinf.W_gb_is_min;
         Fail_We = 0;
         Fail_Te = 0;
-        Te_drive = 0;           % subtract auxiliary power here     
+        Te_drive = 0;           % subtract auxiliary power (torque) here     
                                             
         % for idling
         fuel = (interp2(vinf.eng_consum_trq',vinf.eng_consum_spd,vinf.eng_consum_fuel,vinf.Te_min,vinf.W_gb_is_min,'linear')*cyc_data.dt)';
         NOx = (interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_nox_map,vinf.Te_min,vinf.W_gb_is_min,'linear')*cyc_data.dt)';
-        CO =  (interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_co_map,vinf.Te_min,vinf.W_gb_is_min,'linear')*cyc_data.dt)';
-        HC =(interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_hc_map,vinf.Te_min,vinf.W_gb_is_min,'linear')*cyc_data.dt)';
+        CO = (interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_co_map,vinf.Te_min,vinf.W_gb_is_min,'linear')*cyc_data.dt)';
+        HC = (interp2(vinf.eng_consum_trq,vinf.eng_consum_spd,vinf.fc_hc_map,vinf.Te_min,vinf.W_gb_is_min,'linear')*cyc_data.dt)';
         
         % use a nearest interpolation scheme to mitigate numerical issues
         if Te_c ~= 0
@@ -636,7 +626,7 @@ for t = 1:1:cyc_data.time_cyc
     
     % motor
     Wm_c = cyc_data.Ww(t)*dvar.FD*dvar.G;                           % [rad/s]
-    Tm_c = cyc_data.Tw(t)/(dvar.FD*dvar.G) - Te_drive*x3_n/dvar.G;  % [u1]x[1]
+    Tm_c = cyc_data.Tw(t)/(dvar.FD*dvar.G) - Te_drive*x3_n/dvar.G;  
     Tm_max= interp1(vinf.m_map_spd,vinf.m_max_trq,Wm_c);
     Tm_min = interp1(vinf.m_map_spd,vinf.m_max_gen_trq,Wm_c);
     if Tm_c > Tm_max;
@@ -723,15 +713,8 @@ for t = 1:1:cyc_data.time_cyc
         Fail_SOC = 0;
     end
     
-    %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
-    %---------------------- Update the States-------------------------%
-    %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
-    % update x1 for next time step
-    SOC_c = SOC_n;
-    
-    % update x3 for next time step
-    x3 = find(x3_n == x3_grid);
-    %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
+    % update x1 (SOC) for next time step
+    SOC_c = SOC_n;  
     
     % save states for simulation results
     sim.SOC_final(t) = SOC_c;
@@ -770,16 +753,15 @@ for t = 1:1:cyc_data.time_cyc
     fail_inner_eng(t) = Fail_Eng;
 end
 
-sim.T_eng(sim.T_eng<0) = 0;
 delta_SOC = sim.SOC_final(end) - sim.SOC_final(1);
-total_fuel_gram = sum(sim.inst_fuel); % dt is 1 - grams
+total_fuel_gram = sum(sim.inst_fuel);                  % dt is 1 
 sim.EE = sum(sim.ENG_Event);
 sim.SE = sum(sim.SHIFT_Event);
 
 total_distance_mile = sum(cyc_data.cyc_spd)/3600;
 if RUN_TYPE.emiss_data == 1
-    emission.NOx = sum(sim.NOx)/total_distance_mile;   % dt is 1 - grams
-    emission.HC = sum(sim.HC)/total_distance_mile; % g/mile
+    emission.NOx = sum(sim.NOx)/total_distance_mile;   % dt is 1 
+    emission.HC = sum(sim.HC)/total_distance_mile;     % g/mile
     emission.CO = sum(sim.CO)/total_distance_mile;
 else
     emission = NaN;
@@ -792,9 +774,9 @@ end
 cd ..    % come out of folder
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
-%-----------------------Check Outer Feasibility---------------------------%
+%-----------------------check outer feasibility---------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
-%SOC
+% SOC
 if any(any(fail_inner_SOC))
     FAIL.fail_outer_SOC = 1;
 else
@@ -805,37 +787,37 @@ if abs(delta_SOC) > RUN_TYPE.soc_size
 else
     FAIL.fail_dSOC = 0;
 end
-%We
+% We
 if any(any(fail_inner_We))
     FAIL.fail_outer_We = 1;
 else
     FAIL.fail_outer_We = 0;
 end
-%Te
+% Te
 if any(any(fail_inner_Te))
     FAIL.fail_outer_Te = 1;
 else
     FAIL.fail_outer_Te = 0;
 end
-%Wm
+% Wm
 if any(any(fail_inner_Wm))
     FAIL.fail_outer_Wm = 1;
 else
     FAIL.fail_outer_Wm = 0;
 end
-%Tm
+% Tm
 if any(any(fail_inner_Tm))
     FAIL.fail_outer_Tm = 1;
 else
     FAIL.fail_outer_Tm = 0;
 end
-%Pbatt
+% Pbatt
 if any(any(fail_inner_Pbatt))
     FAIL.fail_outer_Pbatt = 1;
 else
     FAIL.fail_outer_Pbatt = 0;
 end
-%Shift
+% Shift
 if any(any(fail_inner_Shift))
     FAIL.fail_outer_Shift = 1;
 else
@@ -849,5 +831,4 @@ else
 end
 
 FAIL.final = ((FAIL.fail_outer_Tm + FAIL.fail_outer_Wm + FAIL.fail_outer_Te + FAIL.fail_outer_We + FAIL.fail_outer_SOC + FAIL.fail_dSOC + FAIL.fail_outer_Pbatt + FAIL.fail_outer_Shift + FAIL.fail_outer_eng) ~= 0);
-
 end

@@ -1,5 +1,5 @@
 %%    
-figure(30); clf;
+h7=figure; clf;
 plot(vinf.ess_soc,vinf.ess_max_pwr_dis/1000, 'b','linewidth', 12)
 hold on;
 plot(vinf.ess_soc, -vinf.ess_max_pwr_chg/1000, 'r', 'linewidth', 12)

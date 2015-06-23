@@ -2,7 +2,7 @@ Te = sim.T_eng.*vinf.gear(sim.GEAR)*dvar.FD;
 Tm = sim.T_mot*dvar.FD*dvar.G;
 T_total = Te + Tm + sim.T_brake;
 cyc_time=1:1:cyc_data.time_cyc;
-figure(13);clf;
+h3=figure;clf;
 plot(cyc_time,sim.T_brake,'color','k','LineWidth',2);
 hold on 
 plot(cyc_time,Te,'color','g','LineWidth',2);
