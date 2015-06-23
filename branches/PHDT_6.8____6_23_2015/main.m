@@ -12,11 +12,11 @@ Matlab_ver = str2num(ans(1:4)); %#ok<NOANS,ST2NM>
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 RUN_TYPE.sim = 0;        % RUN_TYPE = 1 - for DIRECT     &    RUN_TYPE = 0 - for DP only
 RUN_TYPE.emiss_data = 1; % RUN_TYPE.emiss = 1 - maps have emissions  &   RUN_TYPE.emiss = 0 - maps do not have emissions
-RUN_TYPE.emiss_on = 1;   % to turn of and on emissions
+RUN_TYPE.emiss_on = 0;   % to turn of and on emissions
 RUN_TYPE.plot = 0;       % RUN_TYPE.plot = 1 - plots on  &   RUN_TYPE.plot = 0 - plots off
 RUN_TYPE.save = 1;       % to save results
-RUN_TYPE.soc_size = 0.1;
-RUN_TYPE.trq_size = 15;   % Nm
+RUN_TYPE.soc_size = 0.001;
+RUN_TYPE.trq_size = 0.5;   % Nm
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 %-----------------Weighing Parameters for DP------------------------------%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
@@ -180,7 +180,7 @@ if RUN_TYPE.plot == 1 || RUN_TYPE.save == 1
         
         check_exist = exist(fullfile(cd,name),'dir');
         if check_exist == 7
-            rmdir(name,'s')                 % Delete any left over info
+            rmdir(name,'s')                 % delete any left over info
         end
         mkdir(name)
         cd(name)
@@ -190,6 +190,8 @@ if RUN_TYPE.plot == 1 || RUN_TYPE.save == 1
         eval(['save(''','FAIL',''',','''FAIL'');'])
         eval(['save(''','sim',''',','''sim'');'])
         eval(['save(''','delta_SOC',''',','''delta_SOC'');'])
+        eval(['save(''','weight',''',','''weight'');'])
+        eval(['save(''','RUN_TYPE',''',','''RUN_TYPE'');'])
         
         savefig(h1, 'main.fig')
         savefig(h2, 'fuel.fig')
