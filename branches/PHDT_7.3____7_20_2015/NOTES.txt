@@ -1,0 +1,18 @@
+% New for this Release -- 7.3
+
+fixed the acceleration diff eq
+
+fixed the acceleration time check function
+
+
+ALSO:
+{NaN's cannot be converted to logicals.
+
+Error in LHC (line 242)
+    fail_acc_test = ~Pass_Total;
+
+
+Error in HWFET_114 (line 52)
+LHC;
+
+The function pass back was swapped in LHC
